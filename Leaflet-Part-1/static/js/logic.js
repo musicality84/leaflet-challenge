@@ -26,38 +26,27 @@ function createMap(earthquakes) {
     layers: [street, earthquakes]
   });
 
-  let legend = L.control({position: 'bottomright'});
+  var legend = L.control({
+  position: 'bottomleft'
+  });
 
-    function getColor(d) {
-    return d > 1000 ? 'red' :
-           d > 500  ? '#BD0026' :
-           d > 200  ? '#E31A1C' :
-           d > 100  ? '#FC4E2A' :
-           d > 50   ? '#FD8D3C' :
-           d > 20   ? '#FEB24C' :
-           d > 10   ? '#FED976' :
-                      'red';
-    }
+  legend.onAdd = function (myMap) {
+    let div = L.DomUtil.create("div", "info legend");
 
-  legend.onAdd = function (map) {
+    let depths = [-10, 10, 30, 50, 70, 90];
+    let colors = ["green","lightgreen","yellow","orange","red","darkred"]
 
-    let div = L.DomUtil.create('div', 'info legend'),
-    depths = [-10, 10, 30, 50, 70, 90],
-    labels = [];
+    for (let i=0; i<depths.length; i++) {
+        div.innerHTML += "<i style=background:'" + colors[i] + "';></i>"
+            + depths[i]
+            + (depths[i+1] ? "-" + depths[i+1] + "<br>" : "+");
+    };
+    return div;
+  };
 
-    // loop through our density intervals and generate a label with a colored square for each interval
-    for (let i = 0; i < depths.length; i++) {
-        div.innerHTML +=
-            '<i style="background:' + getColor(depths[i] + 1) + '"></i> ' +
-            depths[i] + (depths[i + 1] ? '&ndash;' + depths[i + 1] + '<br>' : '+');
-}
+  legend.addTo(myMap);
 
-return div;
 };
-
-legend.addTo(myMap);
-
-}
 
 function createMarkers(response) {
 
@@ -70,11 +59,11 @@ function createMarkers(response) {
 
     let color = "";
     if (features[index].geometry.coordinates[2] > 90) {
-        color = "red",
+        color = "darkred",
         opacity = .5;
     }
     else if (features[index].geometry.coordinates[2] > 70) {
-        color = "orange",
+        color = "red",
         opacity = .5;
     }
     else if (features[index].geometry.coordinates[2] > 50) {
@@ -86,13 +75,13 @@ function createMarkers(response) {
         opacity = .5;
     }
     else if (features[index].geometry.coordinates[2] > 10) {
-        color = "green",
+        color = "lightgreen",
         opacity = .3;
     }
     else {
         color = "green",
         opacity = .75;
-    }
+    };
 
     let quakeMarker = L.circle([features[index].geometry.coordinates[1], features[index].geometry.coordinates[0]],{
         fillOpacity: opacity,
@@ -103,12 +92,11 @@ function createMarkers(response) {
     ).bindPopup(`<h3>${features[index].properties.place}</h3><hr><p>${new Date(features[index].properties.time)}</p>`);
 
     quakeMarkers.push(quakeMarker);
-  }
+  };
 
   createMap(L.layerGroup(quakeMarkers));
 
-}
-
-
+};
 
 d3.json(queryUrl).then(createMarkers);
+
